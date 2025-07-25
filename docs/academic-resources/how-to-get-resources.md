@@ -47,6 +47,7 @@ Z-Library 是一个广受欢迎的数字图书馆，但也因其知名度而成�
 1.  **官方的域名发布页面**：[域名发布页面](https://zlibrary.st/new-z-library-official-website-links)
 
 目前推荐域名：https://z-library.sk/
+
 目前推荐镜像：https://zh.zlib.by/
 
 2.  **官方客户端**：Z-Library 提供桌面和移动应用程序。通过官方渠道下载并安装客户端，可以让你在不依赖浏览器的情况下直接访问其资源库，这在很大程度上规避了访问到虚假网站的风险。
