@@ -1,46 +1,52 @@
 {% if page.meta.hide_comments is not defined or page.meta.hide_comments is not true %}
-<h2 id="__comments">评论</h2>
+  <h2 id="__comments">评论测试1</h2>
 
-<!-- 1. 用 preferred_color_scheme 让 giscus 自动跟随系统 -->
-<script src="https://giscus.app/client.js"
-        data-repo="Ac-Wiki/Ac-Wiki"
-        data-repo-id="R_kgDONCnJnA"
-        data-category="Announcements"
-        data-category-id="DIC_kwDONCnJnM4Cjk4S"
-        data-mapping="title"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="1"
-        data-input-position="top"
-        data-theme="preferred_color_scheme"
-        data-lang="zh-CN"
-        data-loading="lazy"
-        crossorigin="anonymous"
-        async>
-</script>
+  <!-- 1. 提前预加载两套主题，加快首次/切换时的样式加载 -->
+  <link rel="prefetch" href="https://giscus.app/themes/light.css">
+  <link rel="prefetch" href="https://giscus.app/themes/dark_dimmed.css">
 
-<!-- 2. 手动切换时立即强制指定主题，无延迟 -->
-<script>
-/* 把 MkDocs 的调色板映射成 giscus 主题名 */
-const paletteToGiscus = {
-  default: 'light',
-  slate  : 'dark_dimmed'
-};
+  <!-- 2. giscus 脚本，先给一个初始主题 -->
+  <script src="https://giscus.app/client.js"
+          data-repo="Ac-Wiki/Ac-Wiki"
+          data-repo-id="R_kgDONCnJnA"
+          data-category="Announcements"
+          data-category-id="DIC_kwDONCnJnM4Cjk4S"
+          data-mapping="title"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="1"
+          data-input-position="top"
+          data-theme="preferred_color_scheme"
+          data-lang="zh-CN"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async></script>
 
-/* 发送主题给 giscus */
-function sendGiscusTheme(theme) {
-  const iframe = document.querySelector('iframe.giscus-frame');
-  if (!iframe) return;
-  iframe.contentWindow.postMessage(
-    { giscus: { setConfig: { theme } } },
-    'https://giscus.app'
-  );
-}
+  <!-- 3. 利用 MkDocs Material 原生事件，实时切换 giscus 主题 -->
+  <script>
+    function syncGiscusTheme () {
+      // MkDocs Material 把当前主题放在 <html data-md-color-scheme="...">
+      const scheme = document.documentElement.dataset.mdColorScheme;
+      const theme  = (scheme === 'slate') ? 'dark_dimmed' : 'light';
 
-/* 在调色板切换瞬间触发，比 MutationObserver 快 */
-document.addEventListener('palettechange', () => {
-  const palette = document.body.dataset.mdColorScheme || 'default';
-  sendGiscusTheme(paletteToGiscus[palette] || 'light');
-});
-</script>
+      const iframe = document.querySelector('iframe.giscus-frame');
+      if (iframe) {
+        iframe.contentWindow.postMessage(
+          { giscus: { setConfig: { theme } } },
+          'https://giscus.app'
+        );
+      }
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', syncGiscusTheme);
+
+    // 监听主题切换（Material 在切换后主动触发）
+    document.addEventListener('change', function (e) {
+      if (e.target.matches('[data-md-color-media]') ||
+          e.target.matches('[data-md-color-scheme]')) {
+        syncGiscusTheme();
+      }
+    });
+  </script>
 {% endif %}
