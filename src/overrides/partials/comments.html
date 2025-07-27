@@ -1,4 +1,6 @@
 {% if page.meta.hide_comments is not defined or page.meta.hide_comments is not true %}
+  <!-- 上面那行代码的意思是：如果页面元数据里没有定义 hide_comments，或者 hide_comments 的值不是 true，就显示下面的内容 -->
+  
   <h2 id="__comments">评论</h2>
   <!-- Giscus 评论系统 -->
   <script
@@ -19,46 +21,30 @@
     async
   ></script>
 
-  <!-- 
-    优化版同步脚本：
-    使用 mkdocs-material 主题的原生 JS API 监听颜色变化，
-    响应速度比 MutationObserver 更快。
-  -->
+  <!-- 用于同步 MkDocs 主题的脚本 -->
   <script>
-    // 定义一个函数，用于向 Giscus 发送主题变更消息
-    function setGiscusTheme(theme) {
-      const iframe = document.querySelector('iframe.giscus-frame');
+    var giscus = document.querySelector("script[src*=giscus]");
+
+    // 监听主题切换事件
+    var observer = new MutationObserver(function() {
+      var theme = document.body.getAttribute("data-md-color-scheme") === "slate"
+        ? "dark_dimmed" // Giscus 的暗黑主题
+        : "light";      // Giscus 的白天主题
+
+      // 向 Giscus iframe 发送消息以更新主题
+      var iframe = document.querySelector("iframe.giscus-frame");
       if (iframe) {
         iframe.contentWindow.postMessage(
           { giscus: { setConfig: { theme: theme } } },
-          'https://giscus.app'
+          "https://giscus.app"
         );
       }
-    }
+    });
 
-    // 确保 mkdocs-material 的 JS 对象加载完毕
-    document.addEventListener("DOMContentLoaded", function() {
-      // 获取 mkdocs-material 的颜色主题 observable 对象
-      const colorObserver = document.body.adjective.watch("color");
-
-      // 订阅颜色主题变化事件
-      colorObserver.subscribe(function(palette) {
-        // `palette.scheme` 的值是 "default" (白天) 或 "slate" (暗黑)
-        const giscusTheme = palette.scheme === 'slate' 
-          ? 'dark_dimmed' 
-          : 'light';
-        setGiscusTheme(giscusTheme);
-      });
-
-      // Giscus iframe 加载可能较慢，初始加载时也尝试设置一次主题
-      // 以防用户刷新页面时主题不匹配
-      setTimeout(() => {
-        const initialScheme = document.body.getAttribute("data-md-color-scheme");
-        const initialGiscusTheme = initialScheme === 'slate' 
-          ? 'dark_dimmed' 
-          : 'light';
-        setGiscusTheme(initialGiscusTheme);
-      }, 200); // 稍微延迟以等待 iframe 加载
+    // 开始监听 body 元素上的属性变化
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-md-color-scheme"]
     });
   </script>
 {% endif %}
