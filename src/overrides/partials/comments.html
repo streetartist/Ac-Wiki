@@ -1,5 +1,7 @@
-{% if page.meta.comments %}
-  <h2 id="__comments">{{ lang.t("meta.comments") }}</h2>
+{% if page.meta.hide_comments is not defined or page.meta.hide_comments is not true %}
+  <!-- 上面那行代码的意思是：如果页面元数据里没有定义 hide_comments，或者 hide_comments 的值不是 true，就显示下面的内容 -->
+  
+  <h2 id="__comments">评论</h2>
   <!-- Giscus 评论系统 -->
   <script
     src="https://giscus.app/client.js"
