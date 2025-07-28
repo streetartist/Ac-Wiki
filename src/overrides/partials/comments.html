@@ -1,7 +1,9 @@
 {% if page.meta.hide_comments is not defined or page.meta.hide_comments is not true %}
-  <!-- 上面那行代码的意思是：如果页面元数据里没有定义 hide_comments，或者 hide_comments 的值不是 true，就显示下面的内容 -->
+  <!-- 预取Giscus主题CSS -->
+  <link rel="prefetch" href="https://giscus.app/themes/light.css" as="style">
+  <link rel="prefetch" href="https://giscus.app/themes/dark_dimmed.css" as="style">
   
-  <h2 id="__comments">评论</h2>
+  <h2 id="__comments">评论测试2</h2>
   <!-- Giscus 评论系统 -->
   <script
     src="https://giscus.app/client.js"
@@ -21,30 +23,46 @@
     async
   ></script>
 
-  <!-- 用于同步 MkDocs 主题的脚本 -->
+  <!-- 优化后的同步脚本 -->
   <script>
-    var giscus = document.querySelector("script[src*=giscus]");
-
-    // 监听主题切换事件
-    var observer = new MutationObserver(function() {
-      var theme = document.body.getAttribute("data-md-color-scheme") === "slate"
-        ? "dark_dimmed" // Giscus 的暗黑主题
-        : "light";      // Giscus 的白天主题
-
-      // 向 Giscus iframe 发送消息以更新主题
-      var iframe = document.querySelector("iframe.giscus-frame");
-      if (iframe) {
-        iframe.contentWindow.postMessage(
-          { giscus: { setConfig: { theme: theme } } },
-          "https://giscus.app"
-        );
+    // 确保DOM加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+      // 设置主题的函数
+      function syncGiscusTheme() {
+        const theme = document.body.getAttribute('data-md-color-scheme') === 'slate'
+          ? 'dark_dimmed'
+          : 'light';
+        
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (iframe) {
+          iframe.contentWindow.postMessage(
+            { giscus: { setConfig: { theme } } },
+            'https://giscus.app'
+          );
+        }
       }
-    });
-
-    // 开始监听 body 元素上的属性变化
-    observer.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["data-md-color-scheme"]
+      
+      // 1. 使用MkDocs的原生事件监听
+      document.addEventListener('md-palette', syncGiscusTheme);
+      
+      // 2. 添加MutationObserver作为备用
+      const observer = new MutationObserver(syncGiscusTheme);
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['data-md-color-scheme']
+      });
+      
+      // 3. 初始加载时设置主题
+      // 等待Giscus加载完成（最多等待5秒）
+      const giscusInterval = setInterval(() => {
+        if (document.querySelector('iframe.giscus-frame')) {
+          clearInterval(giscusInterval);
+          syncGiscusTheme();
+        }
+      }, 100);
+      
+      // 4. 设置超时防止无限等待
+      setTimeout(() => clearInterval(giscusInterval), 5000);
     });
   </script>
 {% endif %}
